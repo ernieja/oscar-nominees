@@ -5,7 +5,7 @@ import sqlite3 as lite
 import unicodedata
 
 
-# remove accents (helpful when searching database later)
+# remove accents (helpful when user searches for names later)
 def strip_accents(s):
     form = unicodedata.normalize("NFD", s)
     return u"".join([c for c in form if not unicodedata.combining(c)])
@@ -52,7 +52,7 @@ def insert_nominees(film_dict, outcome):
     con = lite.connect("oscars.db")
     c = con.cursor()
 
-    tblstr = '''CREATE TABLE IF NOT EXISTS nominees(
+    c.execute('''CREATE TABLE IF NOT EXISTS nominees(
                 award_year INTEGER,
                 award TEXT,
                 nominee TEXT,
@@ -60,11 +60,12 @@ def insert_nominees(film_dict, outcome):
                 result TEXT,
                 PRIMARY KEY (award_year, award, nominee, film)
                 FOREIGN KEY(film) REFERENCES films(film)
-                )'''
-    c.execute(tblstr)
+                )''')
 
+    # if entry doesn't exist, insert
     c.execute('INSERT INTO nominees VALUES (?, ?, ?, ?, ?)', (film_dict['Award_Year'], film_dict['Category'],
                                                               film_dict['Nom_Name'], film_dict['Film'], outcome))
+
     con.commit()
     c.close()
     con.close()
@@ -75,21 +76,21 @@ def insert_movies(film_dict):
     con = lite.connect("oscars.db")
     c = con.cursor()
 
-    tblstr = '''CREATE TABLE IF NOT EXISTS films(
-                    award_year INTEGER,
-                    film TEXT,
-                    normal_film TEXT,
-                    year INTEGER,
-                    director TEXT,
-                    genre TEXT,
-                    rated TEXT,
-                    writer TEXT,
-                    metascore INTEGER,
-                    imdbRating REAL,
-                    PRIMARY KEY(film, year)
-                    )'''
-    c.execute(tblstr)
+    c.execute('''CREATE TABLE IF NOT EXISTS films(
+                 award_year INTEGER,
+                 film TEXT,
+                 normal_film TEXT,
+                 year INTEGER,
+                 director TEXT,
+                 genre TEXT,
+                 rated TEXT,
+                 writer TEXT,
+                 metascore INTEGER,
+                 imdbRating REAL,
+                 PRIMARY KEY(film, year)
+                 )''')
 
+    # if entry doesn't exist, insert
     c.execute("SELECT * FROM films WHERE film=? AND year=?", (film_dict['Film'], film_dict['Year']))
     data = c.fetchone()
     if data is None:
@@ -100,6 +101,7 @@ def insert_movies(film_dict):
                                                                               film_dict["Writer"],
                                                                               film_dict["Metascore"],
                                                                               film_dict["imdbRating"]))
+
     con.commit()
     c.close()
     con.close()
@@ -128,20 +130,21 @@ def insert_people(name, film, role):
     con = lite.connect("oscars.db")
     c = con.cursor()
 
-    tblstr = '''CREATE TABLE IF NOT EXISTS people(
+    c.execute('''CREATE TABLE IF NOT EXISTS people(
                     name TEXT,
                     normal_name TEXT,
                     film TEXT,
                     role TEXT,
                     PRIMARY KEY(name, film, role),
                     FOREIGN KEY(film) REFERENCES films(film)
-                    )'''
-    c.execute(tblstr)
+                    )''')
 
+    # if entry doesn't exist, insert
     c.execute("SELECT * FROM people WHERE name=? AND film=? AND role=?", (name, film, role))
     data = c.fetchone()
     if data is None:
         c.execute('INSERT INTO people VALUES (?, ?, ?, ?)', (name, normal_name, film, role))
+
     con.commit()
     c.close()
     con.close()
@@ -152,11 +155,11 @@ def get_metadata(award_year, index, category):
     winner = 0
     for nom in nominees:
         # parse html
-        film_data = {'Film': nom.find('a', 'movie-title-link').getText().strip(), 'Award_Year': award_year}
+        film_data = {'Film': nom.find('a', 'movie-title-link').getText().strip(), 'Award_Year': award_year,
+                     'Category': category}
 
-        # create entry for nominee name and award category
-        film_data['Category'] = category
-        if int(index) < 1:
+        # create entry for nominee name
+        if int(index) < 1:  # only if award category is Best Picture
             film_data['Nom_Name'] = film_data['Film']
         else:
             film_data['Nom_Name'] = nom.find('div', 'nom-text').getText().strip()
@@ -172,7 +175,7 @@ def get_metadata(award_year, index, category):
         new_data.update(get_json(film_data['Film'], new_data['Year']))
         film_data.update(new_data)
 
-        # load data in sqlite databases
+        # load data into sqlite tables
         insert_movies(film_data)
         if winner == 0:
             insert_nominees(film_data, "Won")

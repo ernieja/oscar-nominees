@@ -7,14 +7,9 @@ pd.set_option('display.max_rows', 500)
 def main_menu():
     menu = ["movie title", "release year", "person", "genre", "award category"]
     while True:
-        choice = shortcuts(
-            "\nWhat can I find for you? (enter 'q' any time to quit and 'm' to see this menu) \n\n"
-            "I can search by:\n\n"
-            "1) Movie title\n"
-            "2) Release year\n"
-            "3) Person\n"
-            "4) Genre\n"
-            "5) Award category\n\n>>> ")
+        choice = shortcuts("\nWhat can I find for you? (enter 'q' any time to quit and 'm' to see this menu)\n\n"
+                           "I can search by:\n 1) Movie title\n 2) Release year\n 3) Person\n 4) Genre\n "
+                           "5) Award category \n\n>>> ")
         if choice in ["1", menu[0]]:
             title_search()
         elif choice in ["2", menu[1]]:
@@ -70,7 +65,7 @@ def get_df(sql, connection):
 # returns movie metadata
 # user can then select to see 1 of the movie's 3 top billed actors
 def get_film_info(df):
-    con = lite.connect("oscars.db")
+    con = lite.connect('oscars.db')
     while True:
         try:
             print("\n", df)
@@ -83,15 +78,16 @@ def get_film_info(df):
         movie = df.iat[index, 1]
         break
     print("\n" + movie + "\n")
-    award_df = get_df("SELECT award, nominee, result "
-                      "FROM nominees "
-                      "WHERE film = '"+movie+"'", con)
-    info_df = get_df("SELECT year, director, genre, rated, writer, metascore, imdbRating as imdb_rating "
-                     "FROM films "
-                     "WHERE film = '"+movie+"'", con)
-    actors_df = get_df("SELECT DISTINCT name "
-                       "FROM people "
-                       "WHERE film = '"+movie+"' AND role = 'actor'", con)
+    award_df = get_df(("""SELECT award, nominee, result
+                          FROM nominees
+                          WHERE film = '%s'""" % movie), con)
+    info_df = get_df(("""SELECT year, director, genre, rated, writer, metascore, imdbRating as imdb_rating
+                         FROM films
+                         WHERE film = '%s'""" % movie), con)
+    actors_df = get_df(("""SELECT DISTINCT name
+                           FROM people
+                           WHERE film = '%s'
+                            AND role = 'actor'""" % movie), con)
     print(info_df, "\n\n\nAcademy Awards\n", award_df, "\n\n\nTop billed actors")
     get_person_info(actors_df)
 
@@ -111,12 +107,12 @@ def get_person_info(df):
         person = df.iat[index, 0]
         break
     print("\n" + person)
-    film_df = get_df('SELECT films.year, people.film, people.role, nominees.award, nominees.result '
-                     'FROM people '
-                     'INNER JOIN films ON people.film = films.film '
-                     'LEFT JOIN nominees ON (nominees.nominee = people.name AND nominees.film = people.film) '
-                     'WHERE people.name = "'+person+'"'
-                     'ORDER BY films.year ', con)
+    film_df = get_df(("""SELECT films.year, people.film, people.role, nominees.award, nominees.result
+                         FROM people
+                         INNER JOIN films ON people.film = films.film
+                         LEFT JOIN nominees ON (nominees.nominee = people.name AND nominees.film = people.film)
+                         WHERE people.name = '%s'
+                         ORDER BY films.year""" % person), con)
     get_film_info(film_df)
 
 
@@ -124,25 +120,27 @@ def get_person_info(df):
 def get_year_info(start_year, end_year, params):
     con = lite.connect("oscars.db")
     if params == "null":
-        film_df = get_df(('SELECT year, film FROM films WHERE year BETWEEN %04d AND %04d ORDER BY year'
+        film_df = get_df(("SELECT year, film FROM films WHERE year BETWEEN %04d AND %04d ORDER BY year"
                           % (start_year, end_year)), con)
     else:
-        cats = params[0]
-        stmt = 'SELECT films.year as release_year, nominees.film, nominees.award, nominees.nominee, nominees.result ' \
-               'FROM nominees ' \
-               'JOIN films ON nominees.film = films.film ' \
-               'WHERE (nominees.award = "' + cats[0] + '"'
-        if len(cats) > 1:
-            for c in range(1, len(cats)):
-                stmt += ' OR award = "'+cats[c]+'"'
+        stmt = """SELECT films.year as release_year, nominees.film, nominees.award, nominees.nominee, nominees.result
+                  FROM nominees
+                  JOIN films ON nominees.film = films.film
+                  WHERE (nominees.award = '%s'"""
+        cats = (params[0][0],)
+        if len(params[0]) > 1:
+            for c in range(1, len(params[0])):
+                stmt += " OR nominees.award = '%s'"
+                cats += (params[0][c],)
         if params[1] == 1:
-            stmt += ') AND nominees.result = "Won"'
+            stmt += ") AND nominees.result = 'Won'"
         elif params[1] == 2:
-            stmt += ') AND nominees.result = "Nominated"'
+            stmt += ") AND nominees.result = 'Nominated'"
         else:
-            stmt += ')'
-        film_df = get_df((stmt + ' AND films.year BETWEEN %04d AND %04d ORDER BY films.year'
-                          % (start_year, end_year)), con)
+            stmt += ")"
+        cats += (start_year, end_year)
+        stmt += " AND films.year BETWEEN %04d AND %04d ORDER BY films.year"
+        film_df = get_df((stmt % cats), con)
     get_film_info(film_df)
 
 
@@ -180,11 +178,12 @@ def person_search():
     con = lite.connect("oscars.db")
     while True:
         name = shortcuts("\nEnter the name of an actor or director: \n\n>>> ")
-        people_df = get_df('SELECT DISTINCT name '
-                           'FROM people '
-                           'WHERE normal_name LIKE "%'+name+'%"', con)
+        people_df = get_df(("""SELECT DISTINCT name
+                               FROM people
+                               WHERE normal_name LIKE '%s'
+                               ORDER BY name""" % ("%" + name + "%")), con)
         if len(people_df) == 0:
-            print("Sorry, I can't find that name. Try someone else.")
+            print("\nSorry, I can't find that name. Try someone else.")
             continue
         break
     get_person_info(people_df)
@@ -195,10 +194,10 @@ def title_search():
     con = lite.connect("oscars.db")
     while True:
         title = shortcuts("\nEnter a word or phrase: \n\n>>> ")
-        movie_df = get_df('SELECT year, film '
-                          'FROM films '
-                          'WHERE film LIKE "%'+title+'%"'
-                          'ORDER BY year', con)
+        movie_df = get_df(("""SELECT year, film
+                             FROM films
+                             WHERE film LIKE '%s'
+                             ORDER BY year""" % ("%" + title + "%")), con)
         if len(movie_df) == 0:
             print("\nSorry, I can't find that title. Try another one.")
             continue
@@ -212,13 +211,14 @@ def genre_search():
     while True:
         genre = shortcuts("\nEnter a genre or several genres (eg: biography, drama, sport): \n\n>>> ")
         genre_list = [genre.strip().replace(",", "") for genre in genre.split(" ")]
-        stmt = '(genre LIKE "%' + genre_list[0] + '%"'
+        genres = ("%" + genre_list[0] + "%",)
+        stmt = "(genre LIKE '%s'"
         if len(genre_list) > 1:
             for i in range(1, len(genre_list)):
-                stmt = stmt + 'AND genre LIKE "%'+genre_list[i]+'%"'
-        movie_df = get_df('SELECT year, film, genre '
-                          'FROM films '
-                          'WHERE'+stmt+')', con)
+                stmt += " AND genre LIKE '%s'"
+                genres += ("%" + genre_list[i] + "%",)
+        stmt = "SELECT year, film, genre FROM films WHERE " + stmt + ")"
+        movie_df = get_df((stmt % genres), con)
         if len(movie_df) == 0:
             print("\nSorry, no movies match that genre search. Try something else.")
             continue

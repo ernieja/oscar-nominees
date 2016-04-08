@@ -40,17 +40,20 @@ The library provides, among other things, the ability to search a `BeautifulSoup
 import requests
 from bs4 import BeautifulSoup
 
+# returns list of HTML within <div class="full-content"> tags
 def get_soup(url_end):
     url = "http://www.filmaffinity.com/en/awards.php?award_id=academy_awards&year=" + str(url_end)
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
     return soup.select("div.full-content")
 
-nominee = get_soup(2000)[0].select("li")[1]
-film_url = nominee.find("a", "movie-title-link")["href"]
-soup = get_soup(film_url, "af_movie")[0]
-some_data = {'Year': int(soup.find(itemprop="datePublished").getText()),
-             'Writer': soup.find("dt", string="Screenwriter").find_next("dd").getText()}
+# each <li> tag in the soup contains data for a 2000 Oscar nominee
+for nominee in get_soup(2000)[0].select("li"):
+    film_url = nominee.find("a", "movie-title-link")["href"]  # gets URL for the <a class="movie-title-link"> tag
+    soup = get_soup(film_url, "af_movie")[0]
+    # scrape and store release year and screenwriter in dictionary
+    some_data = {'Year': int(soup.find(itemprop="datePublished").getText()),
+                 'Writer': soup.find("dt", string="Screenwriter").find_next("dd").getText()}
 ```
 
 ####OMDB API

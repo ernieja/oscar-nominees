@@ -1,4 +1,4 @@
-from createfuncs import get_metadata
+from db_funcs import get_metadata
 from datetime import datetime
 
 

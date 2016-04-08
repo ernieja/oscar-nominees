@@ -82,7 +82,7 @@ User can search the database using the following criteria:
 * Genres
 * Award category
 
-The `pandas` package is useful   `pandas.read_sql` allows for dataframes
+The `pandas` package supports `SQLite` integration. A search query can be interpreted as SQL and read into a DataFrame.
 
 ```python
 import pandas as pd

@@ -22,7 +22,7 @@ Tables are stored in a local database for easy `SQLite` access.
 ####filmaffinity    
 `Beatufiul Soup` is used to parse HTML
 
-The library provides, among other things, the ability to search a `BeautifulSoup` object based on tags, attributes, position on the parse tree, etc. This makes it incredibly easy to navigate a document
+The library provides, among other things, the ability to search a `BeautifulSoup` object based on tags, attributes, position on the parse tree, etc. This makes it incredibly easy to navigate a document.
 
 ```python
 import requests
@@ -60,7 +60,7 @@ def get_json(title, year):
 
 ### Python Application
 ----
-User can search database using the following criteria:
+User can search the database using the following criteria:
 * Film title
 * Release year range
 * Person name

@@ -5,25 +5,25 @@ pd.set_option('display.max_rows', 500)
 
 
 def main_menu():
-    menu = ["Movie title", "Release year", "Person", "Genre", "Award category"]
+    menu = ["movie title", "release year", "person", "genre", "award category"]
     while True:
         choice = shortcuts(
             "\nWhat can I find for you? (enter 'q' any time to quit and 'm' to see this menu) \n\n"
             "I can search by:\n\n"
-            "1) "+menu[0]+"\n"
-            "2) "+menu[1]+"\n"
-            "3) "+menu[2]+"\n"
-            "4) "+menu[3]+"\n"
-            "5) "+menu[4]+"\n\n>>> ")
-        if choice.lower() in ["1", menu[0].lower()]:
+            "1) Movie title\n"
+            "2) Release year\n"
+            "3) Person\n"
+            "4) Genre\n"
+            "5) Award category\n\n>>> ")
+        if choice in ["1", menu[0]]:
             title_search()
-        elif choice.lower() in ["2", menu[1].lower()]:
+        elif choice in ["2", menu[1]]:
             year_search("null")
-        elif choice.lower() in ["3", menu[2].lower()]:
+        elif choice in ["3", menu[2]]:
             person_search()
-        elif choice.lower() in ["4", menu[3].lower()]:
+        elif choice in ["4", menu[3]]:
             genre_search()
-        elif choice.lower() in ["5", menu[4].lower()]:
+        elif choice in ["5", menu[4]]:
             award_search()
         else:
             print("\nLet's try that again...\n")
@@ -232,6 +232,7 @@ def award_search():
     menu = ["Best Picture", "Best Director", "Best Actor", "Best Actress", "Best Supporting Actor",
             "Best Supporting Actress"]
     while True:
+        valid = True;
         award = shortcuts("\nWhich category or categories do you want to search in? (eg: 3, 4, 5)\n\n"
                           "1) "+menu[0]+"\n"
                           "2) "+menu[1]+"\n"
@@ -244,11 +245,16 @@ def award_search():
         for i in range(len(award_list)):
             try:
                 award = int(award_list[i]) - 1
-                award_list[i] = menu[award]
             except ValueError:
                 print("\nSorry, that's not a valid selection.")
                 continue
-        print(award_list)
+            if award > 5 or award < 0:
+                print("\nSorry, that's not a valid selection.")
+                valid = False
+                break
+            award_list[i] = menu[award]
+        if not valid:
+            continue
         break
     while True:
         result = int(shortcuts("\nDo you want to search for: \n\n"

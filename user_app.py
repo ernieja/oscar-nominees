@@ -149,7 +149,7 @@ def year_search(params):
     while True:
         try:
             yr_range = \
-                shortcuts("\nEnter a year or year range between 2000 and 2015 (eg: 2005-2010): \n\n>>> ").split("-")
+                shortcuts("\nEnter a year or year range between 2000 and 2015 (eg: 2005-2010):\n\n>>> ").split("-")
             start = int(yr_range[0].strip())
             if len(yr_range) == 2:
                 end = int(yr_range[1].strip())

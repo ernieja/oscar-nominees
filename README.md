@@ -16,8 +16,20 @@ A scraper written in Python collects information from [filmaffinity] (http://www
 * Nominees
 
 Tables are stored in a local database for easy `SQLite` access.
-
-    import sqlite3 as lite
+```python
+import sqlite3 as lite
+con = lite.connect("oscars.db")
+c = con.cursor()
+    
+c.execute("""CREATE TABLE IF NOT EXISTS people(
+             name TEXT, 
+             normal_name TEXT, 
+             film TEXT, 
+             role TEXT, 
+             PRIMARY KEY(name, film, role),
+             FOREIGN KEY(film) REFERENCES films(film)
+             )""")
+```
 
 ####filmaffinity    
 `Beatufiul Soup` is used to parse HTML
@@ -34,11 +46,11 @@ def get_soup(url_end):
     soup = BeautifulSoup(response.text, "html.parser")
     return soup.select("div.full-content")
 
-nominee = get_soup(2000)[0].select('li')[1]
-film_url = nominee.find('a', 'movie-title-link')['href']
+nominee = get_soup(2000)[0].select("li")[1]
+film_url = nominee.find("a", "movie-title-link")["href"]
 soup = get_soup(film_url, "af_movie")[0]
 some_data = {'Year': int(soup.find(itemprop="datePublished").getText()),
-             'Writer': soup.find("dt", string='Screenwriter').find_next("dd").getText()}
+             'Writer': soup.find("dt", string="Screenwriter").find_next("dd").getText()}
 ```
 
 ####OMDB API
@@ -67,7 +79,7 @@ User can search the database using the following criteria:
 * Genres
 * Award category
 
-Results are pulled from the database and displayed in `Pandas` dataframes
+The `pandas` package is useful   `pandas.read_sql` allows for dataframes
 
 ```python
 import pandas as pd

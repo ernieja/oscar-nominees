@@ -20,6 +20,20 @@ Tables are stored in a local database for easy `SQLite` access.
 import sqlite3 as lite
 con = lite.connect("oscars.db")
 c = con.cursor()
+
+c.execute('''CREATE TABLE IF NOT EXISTS films(
+                 award_year INTEGER,
+                 film TEXT,
+                 normal_film TEXT,
+                 year INTEGER,
+                 director TEXT,
+                 genre TEXT,
+                 rated TEXT,
+                 writer TEXT,
+                 metascore INTEGER,
+                 imdbRating REAL,
+                 PRIMARY KEY(film, year)
+                 )''')
     
 c.execute("""CREATE TABLE IF NOT EXISTS people(
              name TEXT, 
@@ -29,6 +43,17 @@ c.execute("""CREATE TABLE IF NOT EXISTS people(
              PRIMARY KEY(name, film, role),
              FOREIGN KEY(film) REFERENCES films(film)
              )""")
+             
+c.execute('''CREATE TABLE IF NOT EXISTS nominees(
+                award_year INTEGER,
+                award TEXT,
+                nominee TEXT,
+                film TEXT,
+                result TEXT,
+                PRIMARY KEY (award_year, award, nominee, film)
+                FOREIGN KEY(film) REFERENCES films(film)
+                )''')             
+
 ```
 
 ####filmaffinity    

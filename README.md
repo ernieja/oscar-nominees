@@ -1,6 +1,6 @@
 # Oscar Nominees
 
-A simple interactive app that pulls from databases populated with Academy Award nominees across six categories:
+A simple interactive app that returns metadata about Academy Award nominees across six categories:
 * Best Picture
 * Best Director
 * Best Actor

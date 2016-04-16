@@ -100,7 +100,7 @@ def get_json(title, year):
 
 ### Python Application
 ----
-User can search the database using the following criteria:
+User can search the database using any of the following criteria:
 * Film title
 * Release year range
 * Person name

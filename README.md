@@ -107,7 +107,7 @@ User can search the database using any of the following criteria:
 * Genres
 * Award category
 
-The `pandas` package supports `SQLite` integration. A search query can be interpreted as SQL and read into a DataFrame.
+The `pandas` package supports `SQLite` integration. A search query can be interpreted as SQL and read into a DataFrame for display.
 
 ```python
 import pandas as pd

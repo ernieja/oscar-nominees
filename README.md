@@ -56,7 +56,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS nominees(
 
 ```
 
-####filmaffinity    
+#### filmaffinity    
 `Beatufiul Soup` is used to parse HTML
 
 The library provides, among other things, the ability to search a `BeautifulSoup` object based on tags, attributes, position on the parse tree, etc. This makes it incredibly easy to navigate a document.
@@ -81,7 +81,7 @@ for nominee in get_soup(2000)[0].select("li"):
                  'Writer': soup.find("dt", string="Screenwriter").find_next("dd").getText()}
 ```
 
-####OMDB API
+#### OMDB API
 The responses are formatted in `JSON`
 ```python  
 import simplejson
